@@ -1,6 +1,6 @@
 {
   "name": "@chocbite/ts-lib-base",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Base ui library for TypeScript",
   "author": "chocolateandmilkwin",
   "license": "MIT",
@@ -24,13 +24,14 @@
   ],
   "scripts": {
     "dev": "vite --port 9951",
-    "build": "tsup src/index.ts --format esm --dts",
+    "build": "tsup src/index.ts --format esm --dts && cpy src/index.scss dist/index.scss",
     "lint": "eslint src/**/*.ts",
     "test": "vitest run",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@vitest/browser-playwright": "^4.0.0",
+    "cpy-cli": "^7.0.0",
     "esbuild-sass-plugin": "^3.6.0",
     "eslint": "^9.0.0",
     "sass": "^1.97.3",
