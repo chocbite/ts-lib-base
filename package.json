@@ -8,13 +8,15 @@
   "private": false,
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "style": "./dist/index.css",
   "publishConfig": {
     "access": "public"
   },
   "exports": {
     ".": {
       "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "style": "./dist/index.css"
     }
   },
   "files": [
