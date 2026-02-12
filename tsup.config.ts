@@ -6,5 +6,6 @@ export default defineConfig({
   format: ["cjs", "esm"],
   dts: true,
   outDir: "dist",
+  banner: { js: "import './index.css';" },
   esbuildPlugins: [sassPlugin()],
 });
