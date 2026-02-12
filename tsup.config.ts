@@ -6,5 +6,5 @@ export default defineConfig({
   format: ["cjs", "esm"],
   dts: true,
   outDir: "dist",
-  esbuildPlugins: [sassPlugin()],
+  esbuildPlugins: [sassPlugin({ type: "style" })],
 });
