@@ -43,6 +43,6 @@
   "dependencies": {
     "@chocbite/ts-lib-event": "^1.0.0",
     "@chocbite/ts-lib-result": "^1.0.0",
-    "@chocbite/ts-lib-state": "^1.0.0"
+    "@chocbite/ts-lib-state": "^1.1.0"
   }
 }
