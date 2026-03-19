@@ -186,6 +186,31 @@ export abstract class Base extends HTMLElement {
     return func;
   }
 
+  /**Attaches a state to a function, so that the function is subscribed to the state when the component is connected
+   * @param visible when set true the function is only subscribed when the element is visible, this requires an observer to be attached to the element*/
+  attach_state_to_symbol<S extends State<any>>(
+    symbol: symbol,
+    state: S,
+    func: StateInferSub<S>,
+    visible?: boolean,
+  ): this {
+    this.detach_state_from_symbol(symbol).#props.set(
+      symbol,
+      this.attach_state(state, func, visible),
+    );
+    return this;
+  }
+
+  /**Detaches the function from the state/component */
+  detach_state_from_symbol(symbol: symbol): this {
+    const pro = this.#props.get(symbol);
+    if (pro) {
+      this.detach_state(pro);
+      this.#props.delete(symbol);
+    }
+    return this;
+  }
+
   /**Attaches a state to a property, so that the property is updated when the state changes
    * @param prop the property to attach the state to
    * @param state the state to attach to the property
