@@ -29,7 +29,7 @@
     "test": "vitest run",
     "prepublishOnly": "npm run build",
     "upgrades": "npx npm-check-updates",
-    "upgrade": "npx npm-check-updates -u"
+    "upgrade": "npx npm-check-updates -u && npm install"
   },
   "devDependencies": {
     "@vitest/browser-playwright": "^4.1.0",
