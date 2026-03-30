@@ -126,7 +126,7 @@ export abstract class Base extends HTMLElement {
   opts(opts: WithStateROA<DataProps<this>>): this {
     for (const key in opts) {
       const opt = opts[key] as this[typeof key] | StateROA<this[typeof key]>;
-      if (state.h.is.roa(opt)) this.attach_state_ROA_to_prop(key, opt);
+      if (state.is.roa(opt)) this.attach_state_ROA_to_prop(key, opt);
       else this[key] = opt;
     }
     return this;

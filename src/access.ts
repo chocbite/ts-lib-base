@@ -9,7 +9,7 @@ export const AccessTypes = {
 export type AccessTypes = (typeof AccessTypes)[keyof typeof AccessTypes];
 
 /**List for access type*/
-export const ACCESSTYPESINFO = state.h.enums.list<AccessTypes>({
+export const ACCESSTYPESINFO = state.e.list<AccessTypes>({
   [AccessTypes.Write]: {
     name: "Write",
     description: "Write access to element",
