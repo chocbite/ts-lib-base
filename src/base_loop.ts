@@ -3,6 +3,7 @@ import { Base } from "./base";
 import { define_element } from "./define_element";
 
 interface LoopOptions<T, N extends Node> {
+  change?: (element: N, new_value: T) => void;
   destructor?: (element: N) => void;
 }
 
@@ -16,11 +17,13 @@ export class Loop<T, N extends Node> extends Base {
 
   #generator: (val: T) => N;
   #destructor?: (element: N) => void;
+  #change?: (element: N, new_value: T) => void;
 
-  constructor(generator: (val: T) => N, options: LoopOptions<T, N>) {
+  constructor(generator: (val: T) => N, options?: LoopOptions<T, N>) {
     super();
     this.#generator = generator;
-    this.#destructor = options.destructor;
+    this.#destructor = options?.destructor;
+    this.#change = options?.change;
   }
 
   set array(array: readonly T[]) {
@@ -47,14 +50,20 @@ export class Loop<T, N extends Node> extends Base {
           this.childNodes[element.index].remove();
         }
       else if (element.type === "changed")
-        for (let i = 0; i < element.items.length; i++) {
-          this.#destructor?.(
-            this.childNodes[i + element.index] as unknown as N,
-          );
-          this.childNodes[i + element.index].replaceWith(
-            this.#generator(element.items[i]),
-          );
-        }
+        for (let i = 0; i < element.items.length; i++)
+          if (this.#change)
+            this.#change(
+              this.childNodes[i + element.index] as unknown as N,
+              element.items[i],
+            );
+          else {
+            this.#destructor?.(
+              this.childNodes[i + element.index] as unknown as N,
+            );
+            this.childNodes[i + element.index].replaceWith(
+              this.#generator(element.items[i]),
+            );
+          }
     }
   }
 
@@ -66,7 +75,9 @@ define_element(Loop);
 
 export function base_loop<T, N extends Node>(
   generator: (val: T) => N,
-  options: LoopOptions<T, N>,
+  options?: LoopOptions<T, N>,
 ) {
   return new Loop<T, N>(generator, options);
 }
+
+export function base_loop_state() {}
