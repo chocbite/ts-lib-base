@@ -13,6 +13,10 @@ class TestElement extends Base {
   set text(text: string) {
     this.textContent = text;
   }
+
+  set text2(text: () => string | undefined) {
+    this.textContent = text() ?? "";
+  }
 }
 define_element(TestElement);
 

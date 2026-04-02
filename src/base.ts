@@ -218,7 +218,7 @@ export abstract class Base extends HTMLElement {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   attach_state_ROA_to_prop<K extends keyof this>(
     prop: K,
-    state: StateROA<this[K]>,
+    state: StateROA<this[K], any, any>,
     visible?: boolean,
   ): this {
     this.detach_state_from_prop(prop).#props.set(
@@ -236,7 +236,7 @@ export abstract class Base extends HTMLElement {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   attach_state_ROA_to_prop_map<K extends keyof this, T = this[K]>(
     prop: K,
-    state: StateROA<T>,
+    state: StateROA<T, any, any>,
     map: (val: T) => Option<this[K]>,
     visible?: boolean,
   ): this {
@@ -261,7 +261,7 @@ export abstract class Base extends HTMLElement {
    * @param visible when set true the property is only updated when the element is visible, this requires an observer to be attached to the element*/
   attach_state_to_prop<K extends keyof this>(
     prop: K,
-    state: StateREA<this[K]>,
+    state: StateREA<this[K], any, any>,
     map_err: (error: string) => Option<this[K]>,
     visible?: boolean,
   ): this {
@@ -286,7 +286,7 @@ export abstract class Base extends HTMLElement {
    * @param visible when set true the property is only updated when the element is visible, this requires an observer to be attached to the element*/
   attach_state_to_prop_map<K extends keyof this, T = this[K]>(
     prop: K,
-    state: StateREA<T>,
+    state: StateREA<T, any, any>,
     map_err: (error: string) => Option<this[K]>,
     map: (val: T) => Option<this[K]>,
     visible?: boolean,
@@ -315,10 +315,14 @@ export abstract class Base extends HTMLElement {
     return this;
   }
 
+  /**Attaches a state to an element attribute, so that the attribute is updated when the state changes
+   * @param qualified_name the qualified name of the attribute to attach the state to
+   * @param state the state to attach to the attribute
+   * @param visible when set true the attribute is only updated when the element is visible, this requires an observer to be attached to the element*/
   // eslint-disable-next-line @typescript-eslint/naming-convention
   attach_state_ROA_to_attribute(
     qualified_name: string,
-    state: StateROA<string>,
+    state: StateROA<string, any, any>,
     visible?: boolean,
   ): this {
     this.detach_state_from_attribute(qualified_name).#attr.set(
@@ -332,10 +336,15 @@ export abstract class Base extends HTMLElement {
     return this;
   }
 
+  /**Attaches a state to an element attribute, so that the attribute is updated when the state changes
+   * @param qualified_name the qualified name of the attribute to attach the state to
+   * @param state the state to attach to the attribute
+   * @param visible when set true the attribute is only updated when the element is visible, this requires an observer to be attached to the element
+   * @param fallback the fallback value for the attribute when the state is not ok, if undefined the attribute is not updated when the state is not ok*/
   // eslint-disable-next-line @typescript-eslint/naming-convention
   attach_state_ROA_to_attribute_map<U>(
     qualified_name: string,
-    state: StateROA<U>,
+    state: StateROA<U, any, any>,
     map: (val: U) => Option<string>,
     visible?: boolean,
   ): this {
@@ -353,9 +362,14 @@ export abstract class Base extends HTMLElement {
     return this;
   }
 
+  /**Attaches a state to an element attribute, so that the attribute is updated when the state changes
+   * @param qualified_name the qualified name of the attribute to attach the state to
+   * @param state the state to attach to the attribute
+   * @param map_err function called when state gives a ResultErr,
+   * @param visible when set true the attribute is only updated when the element is visible, this requires an observer to be attached to the element*/
   attach_state_to_attribute(
     qualified_name: string,
-    state: StateREA<string>,
+    state: StateREA<string, any, any>,
     map_err: (error: string) => Option<string>,
     visible?: boolean,
   ): this {
@@ -373,9 +387,15 @@ export abstract class Base extends HTMLElement {
     return this;
   }
 
+  /**Attaches a state to an element attribute, so that the attribute is updated when the state changes
+   * @param qualified_name the qualified name of the attribute to attach the state to
+   * @param state the state to attach to the attribute
+   * @param map_err function called when state gives a ResultErr,
+   * @param map function called when state gives a ResultOk,
+   * @param visible when set true the attribute is only updated when the element is visible, this requires an observer to be attached to the element*/
   attach_state_to_attribute_map<U>(
     qualified_name: string,
-    state: StateREA<U>,
+    state: StateREA<U, any, any>,
     map_err: (error: string) => Option<string>,
     map: (val: U) => Option<string>,
     visible?: boolean,
