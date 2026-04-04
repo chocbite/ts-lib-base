@@ -64,6 +64,20 @@ export class Loop<T, N extends Node> extends Base {
               this.#generator(element.items[i]),
             );
           }
+      else if (element.type === "moved") {
+        const extracted_nodes: Node[] = [];
+        for (let i = 0; i < element.items.length; i++) {
+          const node = this.childNodes[element.from_index + i];
+          extracted_nodes.push(node);
+          node.remove();
+        }
+        for (let i = 0; i < element.items.length; i++) {
+          const node = extracted_nodes[i];
+          if (element.to_index + i === this.childNodes.length)
+            this.append(node);
+          else this.insertBefore(node, this.childNodes[element.to_index + i]);
+        }
+      }
     }
   }
 

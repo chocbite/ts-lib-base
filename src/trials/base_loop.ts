@@ -13,8 +13,10 @@ const element2 = document.body.appendChild(
 const st = state.ok([1, 2, 4, 3, 4, 4]);
 element2.attach_state_ROA_to_prop("array", st);
 
-// st.array.push(5, 6);
+st.array.push(5, 6);
 // st.array.unshift(2);
-st.array.change(0, 99, 44);
+// st.array.change(0, 99, 44);
 // st.array.delete(4);
 // st.array.splice(2, 1, 99);
+await new Promise((a) => setTimeout(a, 2000));
+st.array.move(0, 2);
