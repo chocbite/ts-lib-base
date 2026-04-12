@@ -12,7 +12,7 @@ export class Loop<T, N extends Node> extends Base {
     return "loop";
   }
   static element_name_space(): string {
-    return "loop";
+    return "base";
   }
 
   #generator: (val: T) => N;

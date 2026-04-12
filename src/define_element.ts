@@ -30,6 +30,12 @@ export const validate_element_name = (name: string) => {
   return "Unknown fault";
 };
 
+let base_element_global_namespace = "";
+
+export const set_base_element_global_namespace = (namespace: string) => {
+  base_element_global_namespace = namespace + (namespace.length ? "-" : "");
+};
+
 interface ElementConstructor {
   element_name: () => string;
   element_name_space: () => string;
@@ -48,12 +54,12 @@ export const base_element_name = (element: ElementConstructor): string => {
     runner = Object.getPrototypeOf(runner) as ElementConstructor;
     if (check === runner.element_name)
       throw new Error(
-        "Element uses same name as ancestor, abstract classes should return '@abstract@'"
+        "Element uses same name as ancestor, abstract classes should return '@abstract@'",
       );
     if (!name.length) throw new Error("Element doesn't define element name");
     if (name !== "@abstract@") define_name = "-" + name + define_name;
   }
-  return namespace + define_name;
+  return base_element_global_namespace + namespace + define_name;
 };
 
 export const ELEMENT_LIST: Set<string> = new Set();
@@ -78,12 +84,12 @@ export const define_element = (element: ElementConstructor) => {
           name +
           define_name +
           '" ' +
-          "Element uses same name as ancestor, abstract classes should return '@abstract@'"
+          "Element uses same name as ancestor, abstract classes should return '@abstract@'",
       );
     if (!name.length) throw new Error("Element doesn't define element name");
     if (name !== "@abstract@") define_name = "-" + name + define_name;
   }
-  define_name = namespace + define_name;
+  define_name = base_element_global_namespace + namespace + define_name;
   try {
     // @ts-expect-error Dynamic custom element definition
     customElements.define(define_name, element);
@@ -99,7 +105,7 @@ export const define_element = (element: ElementConstructor) => {
         'Failed to define element "' +
           define_name +
           '" ' +
-          validate_element_name(define_name)
+          validate_element_name(define_name),
       );
     }
   }

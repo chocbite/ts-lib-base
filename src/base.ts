@@ -1,4 +1,3 @@
-import { EventHandler } from "@chocbite/ts-lib-event";
 import { some, type Option } from "@chocbite/ts-lib-result";
 import {
   state,
@@ -10,24 +9,6 @@ import {
 } from "@chocbite/ts-lib-state";
 import { AccessTypes } from "./access";
 import { BaseObserver, type BaseObserverOptions } from "./observer";
-
-/**Event types for base*/
-export const ConnectEventVal = {
-  /**When element is connected from document*/
-  Connect: 0,
-  /**When element is disconnected from document*/
-  Disconnect: 1,
-  /**When element is adopted by another document*/
-  Adopted: 2,
-} as const;
-export type ConnectEventVal =
-  (typeof ConnectEventVal)[keyof typeof ConnectEventVal];
-
-/**Events for Base element */
-export interface BaseEvents {
-  connect: ConnectEventVal;
-  visible: boolean;
-}
 
 // Helpers for opts
 type DataProps<T> = {
@@ -63,14 +44,10 @@ export abstract class Base extends HTMLElement {
   static element_name_space() {
     return "lib";
   }
-  /**Events for element*/
-  #base_events = new EventHandler<BaseEvents, Base>(this);
-  /**Events for element*/
-  readonly base_events = this.#base_events.consumer;
 
   #states: Map<StateSub<any>, [State<any>, boolean]> = new Map();
 
-  #is_connected: boolean = false;
+  readonly is_connected: boolean = false;
 
   /**Observer for children of this element */
   #observer?: BaseObserver;
@@ -86,34 +63,28 @@ export abstract class Base extends HTMLElement {
 
   /**Runs when element is attached to document*/
   protected connectedCallback() {
-    this.#base_events.emit("connect", ConnectEventVal.Connect);
     for (const [f, [s, v]] of this.#states) if (!v) s.sub(f, true);
     if (this.#attached_observer) this.#attached_observer.observe(this);
     else this.internal_set_visible(true);
-    this.#is_connected = true;
+    //@ts-expect-error Change readonly, in same class, why is there no way to do this without ts-ignore?
+    this.is_connected = true;
   }
 
   /**Runs when element is dettached from document*/
   protected disconnectedCallback() {
-    this.#base_events.emit("connect", ConnectEventVal.Disconnect);
     for (const [f, [s, v]] of this.#states) if (!v) s.unsub(f);
     if (this.#attached_observer) {
       this.#attached_observer.unobserve(this);
       this.internal_set_visible(false);
     }
-    this.#is_connected = false;
-  }
-
-  /**Runs when element is attached to different document*/
-  protected adoptedCallback() {
-    this.#base_events.emit("connect", ConnectEventVal.Adopted);
+    //@ts-expect-error Change readonly, in same class
+    this.is_connected = false;
   }
 
   private internal_set_visible(is: boolean) {
     if (this.is_visible !== is) {
       //@ts-expect-error Change readonly, in same class
       this.is_visible = is;
-      this.#base_events.emit("visible", is);
       if (is) {
         for (const [f, [s, v]] of this.#states) if (v) s.sub(f, true);
       } else {
@@ -132,6 +103,13 @@ export abstract class Base extends HTMLElement {
     return this;
   }
 
+  //       ____  ____   _____ ______ _______      ________ _____
+  //      / __ \|  _ \ / ____|  ____|  __ \ \    / /  ____|  __ \
+  //     | |  | | |_) | (___ | |__  | |__) \ \  / /| |__  | |__) |
+  //     | |  | |  _ < \___ \|  __| |  _  / \ \/ / |  __| |  _  /
+  //     | |__| | |_) |____) | |____| | \ \  \  /  | |____| | \ \
+  //      \____/|____/|_____/|______|_|  \_\  \/   |______|_|  \_\
+
   /**Returns an observer for the element */
   observer(
     options: BaseObserverOptions = {
@@ -146,19 +124,54 @@ export abstract class Base extends HTMLElement {
   /**Attaches the component to an observer, which is needed for the isVisible state and event to work and for the state system to work on visible*/
   attach_to_observer(observer?: BaseObserver): this {
     if (observer) {
-      if (this.#is_connected) {
+      if (this.is_connected) {
         if (this.#attached_observer) this.#attached_observer.unobserve(this);
         observer.observe(this);
       }
       this.#attached_observer = observer;
     } else if (this.#attached_observer) {
-      if (this.#is_connected) this.#attached_observer.unobserve(this);
+      if (this.is_connected) this.#attached_observer.unobserve(this);
       if (!this.is_visible) this.internal_set_visible(true);
       this.#attached_observer = undefined;
     }
     return this;
   }
 
+  //               _____ _____ ______  _____ _____
+  //         /\   / ____/ ____|  ____|/ ____/ ____|
+  //        /  \ | |   | |    | |__  | (___| (___
+  //       / /\ \| |   | |    |  __|  \___ \\___ \
+  //      / ____ \ |___| |____| |____ ____) |___) |
+  //     /_/    \_\_____\_____|______|_____/_____/
+  /**Sets the access of the element, passing undefined is the same as passing write access*/
+  set access(access: AccessTypes) {
+    this.#access = access;
+    switch (access) {
+      case AccessTypes.Write:
+        this.inert = false;
+        break;
+      case AccessTypes.Read:
+        this.inert = true;
+        break;
+      case AccessTypes.None:
+        this.setAttribute("inert", "none");
+        break;
+    }
+  }
+
+  /**Overrideable function called when access is changed */
+  protected on_access(_access: AccessTypes) {}
+
+  /**Returns the current access of the element */
+  get access(): AccessTypes {
+    return this.#access ?? AccessTypes.Write;
+  }
+  //       _____ _______    _______ ______
+  //      / ____|__   __|/\|__   __|  ____|
+  //     | (___    | |  /  \  | |  | |__
+  //      \___ \   | | / /\ \ | |  |  __|
+  //      ____) |  | |/ ____ \| |  | |____
+  //     |_____/   |_/_/    \_\_|  |______|
   /**Attaches a state to a function, so that the function is subscribed to the state when the component is connected
    * @param visible when set true the function is only subscribed when the element is visible, this requires an observer to be attached to the element*/
   attach_state<S extends State<any>>(
@@ -170,7 +183,7 @@ export abstract class Base extends HTMLElement {
       console.error("Function already registered with element", func, this);
     else {
       this.#states.set(func, [state, Boolean(visible)]);
-      if (visible ? this.is_visible : this.#is_connected)
+      if (visible ? this.is_visible : this.is_connected)
         state.sub(func as StateSub<any>, true);
     }
     return func;
@@ -180,7 +193,7 @@ export abstract class Base extends HTMLElement {
   detach_state(func: StateSub<any>): typeof func {
     const state = this.#states.get(func);
     if (state) {
-      if (state[1] ? this.is_visible : this.#is_connected) state[0].unsub(func);
+      if (state[1] ? this.is_visible : this.is_connected) state[0].unsub(func);
       this.#states.delete(func);
     } else console.error("Function not registered with element", func, this);
     return func;
@@ -211,6 +224,12 @@ export abstract class Base extends HTMLElement {
     return this;
   }
 
+  //       _____ _______    _______ ______   _____  _____   ____  _____
+  //      / ____|__   __|/\|__   __|  ____| |  __ \|  __ \ / __ \|  __ \
+  //     | (___    | |  /  \  | |  | |__    | |__) | |__) | |  | | |__) |
+  //      \___ \   | | / /\ \ | |  |  __|   |  ___/|  _  /| |  | |  ___/
+  //      ____) |  | |/ ____ \| |  | |____  | |    | | \ \| |__| | |
+  //     |_____/   |_/_/    \_\_|  |______| |_|    |_|  \_\\____/|_|
   /**Attaches a state to a property, so that the property is updated when the state changes
    * @param prop the property to attach the state to
    * @param state the state to attach to the property
@@ -315,6 +334,12 @@ export abstract class Base extends HTMLElement {
     return this;
   }
 
+  //       _____ _______    _______ ______         _______ _______ _____  _____ ____  _    _ _______ ______
+  //      / ____|__   __|/\|__   __|  ____|     /\|__   __|__   __|  __ \|_   _|  _ \| |  | |__   __|  ____|
+  //     | (___    | |  /  \  | |  | |__       /  \  | |     | |  | |__) | | | | |_) | |  | |  | |  | |__
+  //      \___ \   | | / /\ \ | |  |  __|     / /\ \ | |     | |  |  _  /  | | |  _ <| |  | |  | |  |  __|
+  //      ____) |  | |/ ____ \| |  | |____   / ____ \| |     | |  | | \ \ _| |_| |_) | |__| |  | |  | |____
+  //     |_____/   |_/_/    \_\_|  |______| /_/    \_\_|     |_|  |_|  \_\_____|____/ \____/   |_|  |______|
   /**Attaches a state to an element attribute, so that the attribute is updated when the state changes
    * @param qualified_name the qualified name of the attribute to attach the state to
    * @param state the state to attach to the attribute
@@ -419,29 +444,5 @@ export abstract class Base extends HTMLElement {
     const pro = this.#attr.get(qualified_name);
     if (pro) this.detach_state(pro);
     return this;
-  }
-
-  /**Sets the access of the element, passing undefined is the same as passing write access*/
-  set access(access: AccessTypes) {
-    this.#access = access;
-    switch (access) {
-      case AccessTypes.Write:
-        this.inert = false;
-        break;
-      case AccessTypes.Read:
-        this.inert = true;
-        break;
-      case AccessTypes.None:
-        this.setAttribute("inert", "none");
-        break;
-    }
-  }
-
-  /**Overrideable function called when access is changed */
-  protected on_access(_access: AccessTypes) {}
-
-  /**Returns the current access of the element */
-  get access(): AccessTypes {
-    return this.#access ?? AccessTypes.Write;
   }
 }

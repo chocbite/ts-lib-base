@@ -1,6 +1,10 @@
 import state from "@chocbite/ts-lib-state";
 import { Base } from "../base";
-import { define_element } from "../define_element";
+import {
+  define_element,
+  set_base_element_global_namespace,
+} from "../define_element";
+set_base_element_global_namespace("chocbite");
 
 class TestElement extends Base {
   static element_name(): string {
