@@ -41,7 +41,7 @@ interface ElementConstructor {
   element_name_space: () => string;
 }
 
-/**Defines elements inheriting from the base*/
+/**Generates the base name for a custom element */
 export const base_element_name = (element: ElementConstructor): string => {
   const namespace = element.element_name_space();
   const check = element.element_name;
