@@ -1,6 +1,6 @@
 {
   "name": "@chocbite/ts-lib-base",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "description": "Base ui library for TypeScript",
   "author": "chocolateandmilkwin",
   "license": "MIT",
@@ -34,7 +34,7 @@
     "upgrade": "npx npm-check-updates --target semver -u && npm install"
   },
   "devDependencies": {
-    "@chocbite/ts-supplement-eslint": "^1.0.2",
+    "@chocbite/ts-supplement-eslint": "^1.0.3",
     "@tsdown/css": "^0.21.8",
     "@vitest/browser-playwright": "^4.1.4",
     "eslint": "^10.2.0",
