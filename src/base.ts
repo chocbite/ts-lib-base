@@ -23,8 +23,6 @@ type WithStateROA<T> = {
 };
 
 const base_resize_observer = new ResizeObserver((e) => {
-  console.warn(e);
-
   for (let i = 0; i < e.length; i++) {
     //@ts-expect-error Call of private method, is private to prevent external usage
     (<Base>e[i].target).internal_set_size_pos(e[i].contentRect);
