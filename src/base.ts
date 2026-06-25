@@ -8,7 +8,10 @@ import {
   type StateSub,
 } from "@chocbite/ts-lib-state";
 import { AccessTypes } from "./access";
-import { BaseObserver, type BaseObserverOptions } from "./observer";
+import {
+  BaseIntersectObserver,
+  type BaseIntersectObserverOptions,
+} from "./intersect_observer";
 
 // Helpers for opts
 type DataProps<T> = {
@@ -18,6 +21,15 @@ type DataProps<T> = {
 type WithStateROA<T> = {
   [K in keyof T]?: T[K] | StateROA<T[K]>;
 };
+
+const base_resize_observer = new ResizeObserver((e) => {
+  console.warn(e);
+
+  for (let i = 0; i < e.length; i++) {
+    //@ts-expect-error Call of private method, is private to prevent external usage
+    (<Base>e[i].target).internal_set_size_pos(e[i].contentRect);
+  }
+});
 
 /**Shared class for elements to extend
  * All none abstract elements must use the define_element function to declare itself
@@ -49,12 +61,8 @@ export abstract class Base extends HTMLElement {
 
   readonly is_connected: boolean = false;
 
-  /**Observer for children of this element */
-  #observer?: BaseObserver;
-
   /**Works when element is connected to observer, otherwise it is an alias for isConnected*/
   readonly is_visible: boolean = false;
-  #attached_observer?: BaseObserver;
 
   #access?: AccessTypes;
 
@@ -64,7 +72,7 @@ export abstract class Base extends HTMLElement {
   /**Runs when element is attached to document*/
   protected connectedCallback() {
     for (const [f, [s, v]] of this.#states) if (!v) s.sub(f, true);
-    if (this.#attached_observer) this.#attached_observer.observe(this);
+    if (this.#attached_int_observer) this.#attached_int_observer.observe(this);
     else this.internal_set_visible(true);
     //@ts-expect-error Change readonly, in same class, why is there no way to do this without ts-ignore?
     this.is_connected = true;
@@ -73,24 +81,12 @@ export abstract class Base extends HTMLElement {
   /**Runs when element is dettached from document*/
   protected disconnectedCallback() {
     for (const [f, [s, v]] of this.#states) if (!v) s.unsub(f);
-    if (this.#attached_observer) {
-      this.#attached_observer.unobserve(this);
+    if (this.#attached_int_observer) {
+      this.#attached_int_observer.unobserve(this);
       this.internal_set_visible(false);
     }
     //@ts-expect-error Change readonly, in same class
     this.is_connected = false;
-  }
-
-  private internal_set_visible(is: boolean) {
-    if (this.is_visible !== is) {
-      //@ts-expect-error Change readonly, in same class
-      this.is_visible = is;
-      if (is) {
-        for (const [f, [s, v]] of this.#states) if (v) s.sub(f, true);
-      } else {
-        for (const [f, [s, v]] of this.#states) if (v) s.unsub(f);
-      }
-    }
   }
 
   /**Sets any attribute on the base element, to either a fixed value or a state value */
@@ -109,33 +105,87 @@ export abstract class Base extends HTMLElement {
   //     | |  | |  _ < \___ \|  __| |  _  / \ \/ / |  __| |  _  /
   //     | |__| | |_) |____) | |____| | \ \  \  /  | |____| | \ \
   //      \____/|____/|_____/|______|_|  \_\  \/   |______|_|  \_\
+  /**Observer for children of this element */
+  #intersect_observer?: BaseIntersectObserver;
+  #attached_int_observer?: BaseIntersectObserver;
 
   /**Returns an observer for the element */
-  observer(
-    options: BaseObserverOptions = {
+  intersect_observer(
+    options: BaseIntersectObserverOptions = {
       root: this,
       threshold: 0,
       deffered_hidden: 1000,
     },
-  ): BaseObserver {
-    return (this.#observer ??= new BaseObserver(options));
+  ): BaseIntersectObserver {
+    return (this.#intersect_observer ??= new BaseIntersectObserver(options));
   }
 
   /**Attaches the component to an observer, which is needed for the isVisible state and event to work and for the state system to work on visible*/
-  attach_to_observer(observer?: BaseObserver): this {
+  attach_to_intersect_observer(observer?: BaseIntersectObserver): this {
     if (observer) {
       if (this.is_connected) {
-        if (this.#attached_observer) this.#attached_observer.unobserve(this);
+        if (this.#attached_int_observer)
+          this.#attached_int_observer.unobserve(this);
         observer.observe(this);
       }
-      this.#attached_observer = observer;
-    } else if (this.#attached_observer) {
-      if (this.is_connected) this.#attached_observer.unobserve(this);
+      this.#attached_int_observer = observer;
+    } else if (this.#attached_int_observer) {
+      if (this.is_connected) this.#attached_int_observer.unobserve(this);
       if (!this.is_visible) this.internal_set_visible(true);
-      this.#attached_observer = undefined;
+      this.#attached_int_observer = undefined;
     }
     return this;
   }
+
+  private internal_set_visible(is: boolean) {
+    if (this.is_visible !== is) {
+      //@ts-expect-error Change readonly, in same class
+      this.is_visible = is;
+      if (is) {
+        for (const [f, [s, v]] of this.#states) if (v) s.sub(f, true);
+        if (this.#resize_observe) base_resize_observer.observe(this);
+      } else {
+        for (const [f, [s, v]] of this.#states) if (v) s.unsub(f);
+        if (this.#resize_observe) base_resize_observer.unobserve(this);
+      }
+      this.on_visible(is);
+    }
+  }
+  /**Overrideable function called when the element becomes visible or hidden
+   * If intersection observer is not attached it is based on connectedCallback, which is less accurate*/
+  protected on_visible(_is: boolean) {}
+
+  #resize_observe = false;
+  #actual_size?: { width: number; height: number };
+  /**Returns actual size and position of the element
+   * if a resize observer is attached to the element, it will return the result of that, otherwise it will return the result of getBoundingClientRect()*/
+  get actual_size(): { width: number; height: number } {
+    return this.#actual_size ?? this.getBoundingClientRect();
+  }
+
+  /**Attaches the component to the global resize observer */
+  attach_to_resize_observer(): this {
+    if (this.is_visible) base_resize_observer.observe(this);
+    this.#resize_observe = true;
+    return this;
+  }
+
+  /**Dettaches the component from the global resize observer */
+  detach_from_resize_observer(): this {
+    if (this.is_visible) base_resize_observer.unobserve(this);
+    this.#resize_observe = false;
+    this.#actual_size = undefined;
+    return this;
+  }
+
+  private internal_set_size_pos(rect: DOMRectReadOnly) {
+    this.#actual_size = rect;
+    this.on_resize(rect);
+  }
+
+  /**Overrideable function called when the element is resized
+   * Only triggers when a resize observer is attached to the element, otherwise it will not trigger*/
+  protected on_resize(_rect: { width: number; height: number }) {}
 
   //               _____ _____ ______  _____ _____
   //         /\   / ____/ ____|  ____|/ ____/ ____|

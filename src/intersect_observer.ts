@@ -1,6 +1,6 @@
 import type { Base } from "./base";
 
-export type BaseObserverOptions = {
+export type BaseIntersectObserverOptions = {
   /**Deffers updating visible state for so many milliseconds
    * this will also batch updates if they are constantly coming*/
   deffered_visible?: number;
@@ -10,7 +10,7 @@ export type BaseObserverOptions = {
 } & IntersectionObserverInit;
 
 const V2 = "delay" in new IntersectionObserver(() => {});
-export class BaseObserver extends IntersectionObserver {
+export class BaseIntersectObserver extends IntersectionObserver {
   #deffered_visible_time: number;
   #deffered_visible_timeout: number | null = null;
   #deffered_visible_queue: Base[] = [];
@@ -18,7 +18,7 @@ export class BaseObserver extends IntersectionObserver {
   #deffered_hidden_timeout: number | null = null;
   #deffered_hidden_queue: Base[] = [];
 
-  constructor(options: BaseObserverOptions) {
+  constructor(options: BaseIntersectObserverOptions) {
     super(
       (e) => {
         if (
@@ -35,13 +35,13 @@ export class BaseObserver extends IntersectionObserver {
           if (e[i].isIntersecting) {
             this.#deffered_visible_queue.push(e[i].target as Base);
             const index = this.#deffered_hidden_queue.indexOf(
-              e[i].target as Base
+              e[i].target as Base,
             );
             if (index !== -1) this.#deffered_hidden_queue.splice(index, 1);
           } else {
             this.#deffered_hidden_queue.push(e[i].target as Base);
             const index = this.#deffered_visible_queue.indexOf(
-              e[i].target as Base
+              e[i].target as Base,
             );
             if (index !== -1) this.#deffered_visible_queue.splice(index, 1);
           }
@@ -69,7 +69,7 @@ export class BaseObserver extends IntersectionObserver {
       },
       V2 && options.deffered_visible === options.deffered_hidden
         ? ({ delay: options.deffered_visible, ...options } as object)
-        : options
+        : options,
     );
     if (V2 && options.deffered_visible === options.deffered_hidden) {
       this.#deffered_visible_time = 0;

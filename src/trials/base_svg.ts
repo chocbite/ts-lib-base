@@ -1,10 +1,6 @@
 import state from "@chocbite/ts-lib-state";
 import { BaseSVG } from "../base_svg";
-import {
-  define_element,
-  set_base_element_global_namespace,
-} from "../define_element";
-set_base_element_global_namespace("chocbite");
+import { define_element } from "../define_element";
 
 class TestSVGElement extends BaseSVG {
   static element_name(): string {

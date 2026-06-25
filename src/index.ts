@@ -3,5 +3,5 @@ export * from "./base";
 export * from "./base_loop";
 export * from "./base_svg";
 export * from "./define_element";
-export * from "./observer";
+export * from "./intersect_observer";
 import "./index.scss";
