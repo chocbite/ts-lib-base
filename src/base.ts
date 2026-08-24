@@ -193,6 +193,7 @@ export abstract class Base extends HTMLElement {
   //     /_/    \_\_____\_____|______|_____/_____/
   /**Sets the access of the element, passing undefined is the same as passing write access*/
   set access(access: AccessTypes) {
+    if (this.#access === access) return;
     this.#access = access;
     switch (access) {
       case AccessTypes.Write:
@@ -205,6 +206,7 @@ export abstract class Base extends HTMLElement {
         this.setAttribute("inert", "none");
         break;
     }
+    this.on_access(access);
   }
 
   /**Overrideable function called when access is changed */
