@@ -97,6 +97,11 @@ export abstract class Base extends HTMLElement {
     return this;
   }
 
+  /**Elements that can attach to a writable state can declare them in binds*/
+  bind(_opts: {}): this {
+    return this;
+  }
+
   //       ____  ____   _____ ______ _______      ________ _____
   //      / __ \|  _ \ / ____|  ____|  __ \ \    / /  ____|  __ \
   //     | |  | | |_) | (___ | |__  | |__) \ \  / /| |__  | |__) |
