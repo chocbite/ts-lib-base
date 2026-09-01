@@ -102,6 +102,13 @@ export abstract class Base extends HTMLElement {
     return this;
   }
 
+  /**Executes a function with the element as an argument and returns the element
+   * Useful when declaring multiple elements in a single statement, without easy access to a scope to execute code in*/
+  scope(fn: (elem: this) => void): this {
+    fn(this);
+    return this;
+  }
+
   //       ____  ____   _____ ______ _______      ________ _____
   //      / __ \|  _ \ / ____|  ____|  __ \ \    / /  ____|  __ \
   //     | |  | | |_) | (___ | |__  | |__) \ \  / /| |__  | |__) |
