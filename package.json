@@ -1,6 +1,6 @@
 {
   "name": "@chocbite/ts-lib-base",
-  "version": "1.8.4",
+  "version": "1.8.5",
   "description": "Base ui library for TypeScript",
   "author": "chocolateandmilkwin",
   "license": "MIT",
@@ -36,13 +36,13 @@
   "devDependencies": {
     "@chocbite/ts-supplement-eslint": "^2.0.0",
     "@chocbite/ts-lib-common": "^1.6.1",
-    "@tsdown/css": "^0.22.14",
-    "@vitest/browser-playwright": "^4.1.11",
-    "eslint": "^10.9.0",
-    "sass-embedded": "^1.103.1",
-    "tsdown": "^0.22.14",
-    "vite": "^8.2.2",
-    "vitest": "^4.1.11"
+    "@tsdown/css": "^0.23.0",
+    "@vitest/browser-playwright": "^5.0.1",
+    "eslint": "^10.10.0",
+    "sass-embedded": "^1.104.1",
+    "tsdown": "^0.23.0",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.1"
   },
   "dependencies": {
     "@chocbite/ts-lib-state": "^2.4.4"

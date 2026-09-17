@@ -98,7 +98,7 @@ export abstract class Base extends HTMLElement {
   }
 
   /**Elements that can attach to a writable state can declare them in binds*/
-  bind(_opts: {}): this {
+  bind(_opts: never): this {
     return this;
   }
 
@@ -296,7 +296,6 @@ export abstract class Base extends HTMLElement {
    * @param prop the property to attach the state to
    * @param state the state to attach to the property
    * @param visible when set true the property is only updated when the element is visible, this requires an observer to be attached to the element*/
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   attach_state_ROA_to_prop<K extends keyof this>(
     prop: K,
     state: StateROA<this[K], any, any>,
@@ -314,7 +313,6 @@ export abstract class Base extends HTMLElement {
    * @param state the state to attach to the property
    * @param visible when set true the property is only updated when the element is visible, this requires an observer to be attached to the element
    * @param fallback the fallback value for the property when the state is not ok, if undefined the property is not updated when the state is not ok*/
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   attach_state_ROA_to_prop_map<K extends keyof this, T = this[K]>(
     prop: K,
     state: StateROA<T, any, any>,
@@ -406,7 +404,6 @@ export abstract class Base extends HTMLElement {
    * @param qualified_name the qualified name of the attribute to attach the state to
    * @param state the state to attach to the attribute
    * @param visible when set true the attribute is only updated when the element is visible, this requires an observer to be attached to the element*/
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   attach_state_ROA_to_attribute(
     qualified_name: string,
     state: StateROA<string, any, any>,
@@ -428,7 +425,6 @@ export abstract class Base extends HTMLElement {
    * @param state the state to attach to the attribute
    * @param visible when set true the attribute is only updated when the element is visible, this requires an observer to be attached to the element
    * @param fallback the fallback value for the attribute when the state is not ok, if undefined the attribute is not updated when the state is not ok*/
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   attach_state_ROA_to_attribute_map<U>(
     qualified_name: string,
     state: StateROA<U, any, any>,
